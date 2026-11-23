@@ -1,0 +1,90 @@
+name: Update dependencies
+
+# When a package listed in [tool.update-dependencies] in pyproject.toml has a
+# new release on PyPI or conda-forge (whichever it is declared from), raise its
+# ">=" floor and bump the patch version, so that Avogadro's plugin manager
+# offers the update. Avogadro reinstalls the plugin from scratch on update, so
+# it picks up the new release.
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check for new releases and bump versions
+        id: bump
+        run: python3 .github/scripts/bump_dependency.py >> "$GITHUB_OUTPUT"
+
+      # Only needed when the repository commits pixi.lock.
+      - name: Check for a committed lockfile
+        id: lock
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          if git ls-files --error-unmatch pixi.lock > /dev/null 2>&1; then
+            echo "tracked=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        if: steps.lock.outputs.tracked == 'true'
+        with:
+          run-install: false
+
+      - name: Update lockfile
+        if: steps.lock.outputs.tracked == 'true'
+        run: pixi lock
+
+      # Commit to a fixed branch and open (or refresh) one pull request with
+      # the gh CLI, which is preinstalled on GitHub runners. The repository
+      # must allow GitHub Actions to create pull requests (Settings > Actions >
+      # General > Workflow permissions).
+      - name: Open or update the pull request
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.ref_name }}
+          BRANCH: update-dependencies
+          VERSION: ${{ steps.bump.outputs.version }}
+          SUMMARY: ${{ steps.bump.outputs.summary }}
+          LOCK_TRACKED: ${{ steps.lock.outputs.tracked }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git switch -C "$BRANCH"
+          git add pyproject.toml
+          if [ "$LOCK_TRACKED" = "true" ]; then
+            git add pixi.lock
+          fi
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git commit -m "Bump to $VERSION for new dependencies" -m "$SUMMARY"
+          # The branch is regenerated from the base on every run.
+          git push --force origin "$BRANCH"
+
+          title="Bump to $VERSION ($SUMMARY)"
+          body="New releases: $SUMMARY.
+
+          Test the plugin with the new release before merging. Once merged,
+          the Avogadro plugin index picks up the new commit and installed
+          copies show \"Update available\"."
+
+          existing=$(gh pr list --head "$BRANCH" --base "$BASE" --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --title "$title" --body "$body"
+          else
+            gh pr create --base "$BASE" --head "$BRANCH" \
+              --title "$title" --body "$body"
+          fi
