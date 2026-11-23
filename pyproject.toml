@@ -113,6 +113,6 @@ support.gradients = true
 support.elements = "1, 6-9, 15-17"
 support.unit-cell = false
 support.ions = true
-support.radicals = true
+support.radicals = false
 support.batch = false
 support.hessians = false

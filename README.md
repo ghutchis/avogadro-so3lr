@@ -10,15 +10,15 @@ ASE calculator on JAX.
 | Name | Upstream model | Elements | Charge / spin | Unit cells | Weights license |
 | --- | --- | --- | --- | --- | --- |
 | SO3LR-Tauri-M | `so3lr-tauri-m-2606` | H to At (Z = 1-85) | yes / yes | yes | CC BY-NC 4.0 (non-commercial) |
-| SO3LR | `so3lr` (original, JACS 2025) | H, C, N, O, F, P, S, Cl | yes / yes | no | MIT |
+| SO3LR | `so3lr` (original, JACS 2025) | H, C, N, O, F, P, S, Cl | yes / closed-shell only | no | MIT |
 
 Weights ship inside the `so3lr` package and are selected by name, so there is
 nothing to download. The Tauri model is pinned to a dated release so a new
 upstream release never changes your results silently.
 
-The original SO3LR was trained on closed-shell biomolecular chemistry; treat
-open-shell results from it with care. Total charge and spin multiplicity are
-passed from Avogadro to the model.
+The original SO3LR was trained on closed-shell biomolecular chemistry, so
+Avogadro offers it only for singlets; use SO3LR-Tauri-M for radicals. Total
+charge and spin multiplicity are passed from Avogadro to the model.
 
 ### Long-range settings
 
