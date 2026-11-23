@@ -127,12 +127,14 @@ def _evaluate(atoms, keep, num_atoms, coords, want_gradient):
     return energy, gradient
 
 
-def run(identifier):
+def run(identifier, proto_out=None):
+    if proto_out is None:
+        proto_out = sys.stdout.buffer
     # sys.stdin.buffer, never sys.stdin: the text wrapper swallows frames.
     bootstrap = json.loads(sys.stdin.buffer.readline())
     atoms, keep, num_atoms = build_atoms(bootstrap, identifier)
 
-    with EnergyServer(sys.stdin.buffer, sys.stdout.buffer, num_atoms) as server:
+    with EnergyServer(sys.stdin.buffer, proto_out, num_atoms) as server:
         for request in server.requests():
             try:
                 if request.wants_energy_and_gradient:

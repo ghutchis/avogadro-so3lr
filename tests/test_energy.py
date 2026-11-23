@@ -138,3 +138,41 @@ def test_energy_is_invariant_under_a_lattice_translation(copper):
     here, there = exchange(copper, [(coords, 0), (coords + lattice_a, 0)])
 
     assert here == pytest.approx(there)
+
+
+def test_stdout_starts_with_the_frame_magic(water):
+    """Avogadro never resyncs: the first stdout bytes must be a frame header,
+    whatever the libraries printed while loading."""
+    import json
+    import subprocess
+
+    from conftest import _LAUNCH, IDENTIFIER, request_frame
+
+    stdin = json.dumps(water).encode() + b"\n" + request_frame(
+        coordinates(water), 0
+    )
+    process = subprocess.run(
+        _LAUNCH + [IDENTIFIER, "--protocol", "binary-v1"],
+        input=stdin, capture_output=True, timeout=300,
+    )
+    assert process.stdout[:4] == b"AVB1"
+
+
+def test_charge_and_spin_reach_the_model(water):
+    """OH- and the OH radical differ, and both differ from the neutral singlet."""
+    import copy
+
+    oh = copy.deepcopy(water)
+    oh["cjson"]["atoms"]["elements"]["number"] = [8, 1]
+    oh["cjson"]["atoms"]["coords"]["3d"] = [0, 0, 0, 0, 0, 0.97]
+    coords = coordinates(oh)
+    results = []
+    for charge, spin in [(0, 2), (-1, 1), (0, 1)]:
+        oh["charge"], oh["spin"] = charge, spin
+        results.append(exchange(oh, [(coords, 0)])[0])
+    assert len({round(r, 3) for r in results}) == 3
+
+
+def test_legacy_model_runs(water):
+    (energy,) = exchange(water, [(coordinates(water), 0)], identifier="SO3LR")
+    assert np.isfinite(energy)

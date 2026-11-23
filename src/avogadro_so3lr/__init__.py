@@ -12,6 +12,7 @@ binary coordinate frames for as long as the model stays loaded.
 """
 
 import argparse
+import os
 
 
 def setup():
@@ -45,8 +46,15 @@ def main():
 
     # Handlers are imported inside each branch so that a slow dependency is
     # only loaded by the feature that actually needs it.
+    # Protect the protocol stream at the file-descriptor level, before jax or
+    # so3lr is imported: keep a private copy of the real stdout for frames,
+    # then point fd 1 at stderr so anything printed by Python, C or XLA code
+    # (which bypasses sys.stdout) can never corrupt a frame.
+    proto_out = os.fdopen(os.dup(1), "wb")
+    os.dup2(2, 1)
+
     from ._so3lr_server import MODELS, run
 
     if args.feature not in MODELS:
         raise SystemExit(f"Unknown model: {args.feature}")
-    run(args.feature)
+    run(args.feature, proto_out)
