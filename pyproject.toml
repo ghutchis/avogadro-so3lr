@@ -11,7 +11,7 @@ requires-python = ">=3.12,<3.14"
 # here. It brings numpy with it.
 dependencies = [
   "avogadro>=2.1.0",
-  "ase>=3.26,<4",
+  "ase>=3.29.0,<4",
   # fast periodic neighbor search for small cells (upstream optional extra)
   "matscipy>=1.0",
   # so3lr is not on PyPI; this is the upstream main commit that reports
