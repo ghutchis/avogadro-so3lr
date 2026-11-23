@@ -1,0 +1,116 @@
+[project]
+name = "avogadro-so3lr"
+version = "0.1.0"
+description = "Energy models using the SO3LR machine-learned potentials"
+authors = [{name = "Geoff Hutchison", email = "geoff.hutchison@gmail.com"}]
+license = "BSD-3-Clause"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+# The "avogadro" wheel provides avogadro.energy, the binary protocol helper
+# this plugin builds on, so there is no copy of the protocol code to maintain
+# here. It brings numpy with it.
+dependencies = [
+  "avogadro>=2.1.0",
+  "ase>=3.26,<4",
+  # so3lr is not on PyPI; this is the upstream main commit that reports
+  # version 0.2.0 (there is no v0.2.0 tag). It bundles every model's weights.
+  "so3lr @ git+https://github.com/general-molecular-simulations/so3lr.git@889abc332ec3e15fc4cf07c4801faaa01c0367f5",
+]
+
+# Avogadro runs a feature of this plugin as:
+#     pixi run avogadro-so3lr <identifier> --protocol binary-v1
+# The entry point name must begin with "avogadro-" for Avogadro to find it, and
+# by convention it is the plugin name itself.
+[project.scripts]
+avogadro-so3lr = "avogadro_so3lr:main"
+# Avogadro runs the "-setup" entry point once, after installing the plugin.
+avogadro-so3lr-setup = "avogadro_so3lr:setup"
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/avogadro_so3lr"]
+
+# --- Pixi ------------------------------------------------------------------
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[tool.pixi.dependencies]
+python = ">=3.12,<3.14"
+
+# Installing the plugin itself as an editable dependency is what lets Avogadro
+# invoke the entry point with `pixi run`.
+[tool.pixi.pypi-dependencies]
+avogadro_so3lr = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+setup = "avogadro-so3lr-setup"
+
+# pytest lives in a separate environment so that it is not installed alongside
+# the plugin when Avogadro sets it up for a user. `pixi run test` finds the
+# task there automatically.
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+
+[tool.pixi.feature.test.tasks]
+test = "pytest"
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
+
+# so3lr is not on PyPI, so there is nothing to track for it; bump its commit
+# in [project] dependencies by hand.
+[tool.update-dependencies]
+track = ["avogadro", "ase"]
+
+# --- Avogadro --------------------------------------------------------------
+
+[tool.avogadro]
+minimum-avogadro-version = "1.103"
+
+# Each feature is an entry in an array of tables, keyed by feature type. The
+# other supported types are electrostatic-models, file-formats, input-generators
+# and menu-commands.
+#
+# `protocol = "binary-v1"` selects the framed binary exchange implemented by
+# avogadro.energy. Omitting it selects the older line-based text protocol, which
+# cannot carry batches or Hessians.
+#
+# The support.* keys are promises Avogadro holds you to: it refuses to run the
+# model on a molecule outside them, so they must match what the code below
+# actually does.
+[[tool.avogadro.energy-models]]
+identifier = "SO3LR-Tauri-M"
+model-name = "SO3LR-Tauri-M"
+description = "SO3LR Tauri M (2606) energies and gradients with long-range electrostatics and dispersion, H to At. Model weights are non-commercial use only (CC BY-NC 4.0)."
+input-format = "cjson"
+protocol = "binary-v1"
+support.gradients = true
+support.elements = "1-85"
+support.unit-cell = true
+support.ions = true
+support.radicals = true
+support.batch = false
+support.hessians = false
+
+[[tool.avogadro.energy-models]]
+identifier = "SO3LR"
+model-name = "SO3LR"
+description = "Original SO3LR energies and gradients with long-range electrostatics and dispersion for H, C, N, O, F, P, S and Cl (biomolecular systems)"
+input-format = "cjson"
+protocol = "binary-v1"
+support.gradients = true
+support.elements = "1, 6-9, 15-17"
+support.unit-cell = false
+support.ions = true
+support.radicals = true
+support.batch = false
+support.hessians = false

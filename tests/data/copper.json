@@ -1,0 +1,46 @@
+{
+  "_comment": [
+    "A one-atom cubic copper cell, as Avogadro sends it. The atom at the",
+    "origin is followed by its seven corner images, whose fractional",
+    "coordinates are 1.0 along at least one axis. Those images are duplicates",
+    "under periodic boundary conditions and must not be handed to the",
+    "calculator, but they do count toward the atom count in every frame."
+  ],
+  "cjson": {
+    "chemicalJson": 1,
+    "atoms": {
+      "elements": { "number": [29, 29, 29, 29, 29, 29, 29, 29] },
+      "coords": {
+        "3d": [
+          0.0, 0.0, 0.0,
+          3.61, 0.0, 0.0,
+          0.0, 3.61, 0.0,
+          0.0, 0.0, 3.61,
+          3.61, 3.61, 0.0,
+          3.61, 0.0, 3.61,
+          0.0, 3.61, 3.61,
+          3.61, 3.61, 3.61
+        ],
+        "3dFractional": [
+          0.0, 0.0, 0.0,
+          1.0, 0.0, 0.0,
+          0.0, 1.0, 0.0,
+          0.0, 0.0, 1.0,
+          1.0, 1.0, 0.0,
+          1.0, 0.0, 1.0,
+          0.0, 1.0, 1.0,
+          1.0, 1.0, 1.0
+        ]
+      }
+    },
+    "unitCell": {
+      "a": 3.61, "b": 3.61, "c": 3.61,
+      "alpha": 90.0, "beta": 90.0, "gamma": 90.0,
+      "cellVectors": [3.61, 0.0, 0.0, 0.0, 3.61, 0.0, 0.0, 0.0, 3.61]
+    }
+  },
+  "charge": 0,
+  "spin": 1,
+  "options": {},
+  "selectedAtoms": []
+}

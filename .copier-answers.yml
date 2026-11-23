@@ -1,0 +1,31 @@
+# Written by copier so that `copier update` can pull in later template
+# improvements. Do not edit by hand; commit it alongside the project.
+_commit: v0.1.0
+_src_path: avogadro-energy-template
+author_email: geoff.hutchison@gmail.com
+author_name: Geoff Hutchison
+build_backend: hatchling
+conda_dependencies: ''
+description: Energy models using the SO3LR machine-learned potentials
+example_backend: ase
+github_user: ghutchis
+include_charges: false
+include_setup: true
+include_tests: true
+include_user_options: false
+license: BSD-3-Clause
+model_description: Calculate SO3LR-Tauri-M energies and gradients
+model_identifier: SO3LR-Tauri-M
+model_name: SO3LR-Tauri-M
+platforms:
+- osx-arm64
+- linux-64
+plugin_name: avogadro-so3lr
+pypi_dependencies: ''
+python_requires: '3.12'
+support_batch: false
+support_elements: 1-85
+support_hessians: false
+support_ions: true
+support_radicals: true
+support_unit_cell: true
