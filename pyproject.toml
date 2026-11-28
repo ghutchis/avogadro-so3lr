@@ -1,6 +1,6 @@
 [project]
 name = "avogadro-so3lr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Energy models using the SO3LR machine-learned potentials"
 authors = [{name = "Geoff Hutchison", email = "geoff.hutchison@gmail.com"}]
 license = "BSD-3-Clause"
@@ -11,7 +11,7 @@ requires-python = ">=3.12,<3.14"
 # here. It brings numpy with it.
 dependencies = [
   "avogadro>=2.1.0",
-  "ase>=3.29.0,<4",
+  "ase>=3.30.0,<4",
   # fast periodic neighbor search for small cells (upstream optional extra)
   "matscipy>=1.0",
   # so3lr is not on PyPI; this is the upstream main commit that reports
